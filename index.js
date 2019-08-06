@@ -9,83 +9,80 @@ function ask(questionText) {
 }
 
 start();
-//begin function
 async function start() {
   console.log(
     "\n" +
-      "Sup, fam? Let's play a game where you (dumb human) think of a number and I (the wicked smaht computer) try to guess it." +
-      "\n" +
-      "Ready?" +
-      "\n" +
-      "Go!"
+    "'Let's play a game where you (human) think of a number and I (the computer) try to guess it.'" +
+    "\n"
   );
-  let min = 0;
-  let max = 100;
-  let computerNumber = Math.floor((min + max) / 2);
-  let answer = await ask(
-    "Is your number " +
+  let gameStartResponse = await ask("'Are you ready?'" + "\n");
+  if (gameStartResponse.toLowerCase().includes("yes")) {
+    console.log("\n" + "'Lets begin'")
+    let min = 0;
+    let max = 100;
+    let computerNumber = Math.floor((min + max) / 2); // Calculate the minimum and maximum numbers for guessing. In this case, it is hard-coded into the application.
+    return await gameStart(computerNumber, min, max)
+  }
+  if (gameStartResponse.toLowerCase().includes("no")) { // Sometimes you just aren't ready.  
+    console.log("\n" + "'Fair enough..." + "\n" + "Goodbye!'" + "\n")
+    process.exit();
+  }
+  else { // ...and for the sheer jibberish responses and/or typos.
+    console.log("\n" + "'I don't understand the response" + "\n" + "Let's try that again...'" + "\n")
+    start();
+  }
+
+  async function gameStart(computerNumber, min = 0, max = 100) {
+    let answer = await ask(
+      "'Is your number " +
+      "" +
       computerNumber +
-      "? " +
+      "" +
+      "?'" +
       "\n" +
       "\n" +
-      "Enter 'Yes' or 'No' "
-  );
-  //answer = answer.toLowerCase();
+      "Enter 'Yes' or 'No' " +
+      "\n"
+    );
 
-  while (answer.toLowerCase() != "yes") {
-    //while answer is NOT yes run the following while loop \/ \/ \/ \/ \/ \/
-    // `await` means "wait for the following thing to happen"
-    //when you use `await` inside a function, you must use `async` to define that function
-
-    //if (answer.toLowerCase().includes("yes")) {
-    // ".includes" looks at ASCII instead of string
-    //console.log("I win!");
-    //process.exit();
-    //console.log('You entered: ');
-    //}
-
-    if (answer.toLowerCase().includes("no")) {
-      let wrongAnswer = await ask("Is it higher or lower? ");
+    while (answer.toLowerCase().includes("no")) {
+      let wrongAnswer = await ask("'Is it higher or lower?' \n");
       if (wrongAnswer.toLowerCase().includes("higher")) {
         min = computerNumber;
-        computerNumber = Math.floor((min + max) / 2);
-        answer = await ask("Is your number " + computerNumber + "? ");
-      }
-      if (answer.toLowerCase().includes("no")) {
-        if (wrongAnswer.toLowerCase().includes("lower")) {
-          max = computerNumber;
-          computerNumber = Math.floor((min + max) / 2);
-          answer = await ask("Is your number " + computerNumber + "? ");
+        // --------- CHEAT BLOCKER --------- //
+        if (min >= Math.floor(min + max) / 2) {
+          console.log("'You cheated!" + "\n" + "Goodbye!'")
+          process.exit()
         }
+        computerNumber = Math.floor((min + max) / 2);
+        answer = await ask("'Is your number " + computerNumber + "?' \n");
       }
-
-      //if (answer.toLowerCase().includes !== ("yes" || "no" || "higher" || "lower")) {
-      //console.log("I do not recognize the response.")
-      //answer = await ask("Is your number " + computerNumber + "? ")
-      //}
+      if (wrongAnswer.toLowerCase().includes("lower")) {
+        max = computerNumber;
+        // --------- CHEAT BLOCKER --------- //
+        if (max <= Math.ceil((min + max) / 2)) {
+          console.log("'You cheated!" + "\n" + "Goodbye!'")
+          process.exit();
+        }
+        computerNumber = Math.floor((min + max) / 2);
+        answer = await ask("Is your number " + computerNumber + "? \n");
+      }
     }
-
-    //computerNumber = randomInteger(min, max);
-    //answer = await ask("Is your number " + computerNumber + "? ");
-  } // END OF WHILE (answer is NOT yes) LOOP
-
-  //console.log('You entered: ');
-
-  // If statements -- always evaluating top to bottom
-  // will always hit the first one -- only moves to second if false.
-
-  // Now try and complete the program.
-  console.log(
-    "\n" +
-      "I have guessed your number." +
-      "\n" +
-      "I am all powerful." +
-      "\n" +
-      "Program ending..." +
-      "\n" +
-      "Goodbye." +
-      "\n"
-  );
-  process.exit();
+    if (answer.toLowerCase().includes("yes")) {
+      console.log(
+        "\n" +
+        "I have guessed your number." +
+        "\n" +
+        "Program ending..." +
+        "\n" +
+        "Goodbye." +
+        "\n"
+      );
+    }
+    else { // And for the gibberish responses...
+      console.log("'I don't understand the response, try that again...'" + "\n")
+      await gameStart(computerNumber, min = 0, max = 100)
+    }
+    process.exit();
+  }
 }
-
